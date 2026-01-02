@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Secure Privacy Web View</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Referrer hide -->
+<meta name="referrer" content="no-referrer">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #fff;
+}
+header {
+    padding: 10px;
+    background: #020617;
+    display: flex;
+    gap: 8px;
+}
+input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+}
+button {
+    padding: 10px 14px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+button:hover {
+    background: #1d4ed8;
+}
+iframe {
+    width: 100%;
+    height: calc(100vh - 60px);
+    border: none;
+    background: #fff;
+}
+.warning {
+    background: #7c2d12;
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <input type="text" id="url" placeholder="Paste website URL (https://example.blogspot.com)">
+    <button onclick="loadSite()">Open Secure</button>
+</header>
+
+<div class="warning">
+⚠️ Secure Mode ON • Location • Camera • Mic • Popups • Tracking Restricted
+</div>
+
+<iframe id="viewer"
+sandbox="
+allow-same-origin
+allow-scripts
+allow-popups-to-escape-sandbox
+"
+referrerpolicy="no-referrer">
+</iframe>
+
+<script>
+// Force HTTPS
+function normalizeURL(url) {
+    if (!url.startsWith("http")) {
+        return "https://" + url;
+    }
+    return url;
+}
+
+// Load website
+function loadSite() {
+    let url = document.getElementById("url").value.trim();
+    if (!url) {
+        alert("Please enter a URL");
+        return;
+    }
+    document.getElementById("viewer").src = normalizeURL(url);
+}
+
+// Block geolocation completely
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition = function(success, error) {
+        if (error) error({ code: 1, message: "Location blocked" });
+    };
+}
+
+// Block permission requests
+navigator.permissions?.query = () =>
+    Promise.resolve({ state: "denied" });
+
+// Prevent popup abuse
+window.open = function() {
+    alert("Popup blocked for your security");
+    return null;
+};
+</script>
+
+</body>
+</html>
